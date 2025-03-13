@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Dependencies
 node_modules/
 npm-debug.log*
@@ -30,3 +31,7 @@ pids/
 *.pid
 *.seed
 *.pid.lock
+=======
+node_modules
+>>>>>>> 3429c2535814ba1911fc0ee9236cc9ba805ce046
+.terraform/
