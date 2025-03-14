@@ -1,33 +1,32 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
-  Box,
-  Button,
   Container,
   Paper,
   TextField,
+  Button,
   Typography,
+  Box,
   Link,
-  Alert,
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const { login, isLoading } = useAuth();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    setError('');
 
     try {
       await login(email, password);
-      navigate('/chat');
+      navigate('/');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to login');
+      setError('Failed to login. Please check your credentials.');
     }
   };
 
@@ -41,66 +40,48 @@ const LoginPage: React.FC = () => {
           justifyContent: 'center',
         }}
       >
-        <Paper
-          elevation={3}
-          sx={{
-            p: 4,
-            width: '100%',
-            maxWidth: 400,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 3,
-          }}
-        >
-          <Typography variant="h4" component="h1" align="center" gutterBottom>
-            Welcome Back
+        <Paper elevation={3} sx={{ p: 4, width: '100%' }}>
+          <Typography variant="h5" component="h1" gutterBottom align="center">
+            Login
           </Typography>
-
-          {error && <Alert severity="error">{error}</Alert>}
-
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {error && (
+            <Typography color="error" align="center" sx={{ mb: 2 }}>
+              {error}
+            </Typography>
+          )}
+          <form onSubmit={handleSubmit}>
             <TextField
+              fullWidth
               label="Email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              margin="normal"
               required
-              fullWidth
             />
-
             <TextField
+              fullWidth
               label="Password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              margin="normal"
               required
-              fullWidth
             />
-
             <Button
+              fullWidth
               type="submit"
               variant="contained"
-              color="primary"
-              size="large"
-              disabled={isLoading}
-              fullWidth
+              sx={{ mt: 3, mb: 2 }}
             >
-              {isLoading ? 'Logging in...' : 'Log In'}
+              Login
             </Button>
-          </form>
-
-          <Box sx={{ textAlign: 'center' }}>
-            <Typography variant="body2" color="text.secondary">
-              Don't have an account?{' '}
-              <Link
-                component="button"
-                variant="body2"
-                onClick={() => navigate('/signup')}
-              >
-                Sign up
+            <Box sx={{ textAlign: 'center' }}>
+              <Link href="/signup" variant="body2">
+                Don't have an account? Sign up
               </Link>
-            </Typography>
-          </Box>
+            </Box>
+          </form>
         </Paper>
       </Box>
     </Container>

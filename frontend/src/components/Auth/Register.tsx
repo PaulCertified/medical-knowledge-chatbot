@@ -52,7 +52,11 @@ const Register: React.FC = () => {
 
   const handleSubmit = async (values: RegisterFormValues, { setSubmitting }: any) => {
     try {
-      await register(values.email, values.password, values.firstName, values.lastName);
+      const name = values.firstName && values.lastName 
+        ? `${values.firstName} ${values.lastName}`
+        : undefined;
+      
+      await register(values.email, values.password, name);
       setVerificationSent(true);
     } catch (err: any) {
       setError(err.message || 'Registration failed. Please try again.');

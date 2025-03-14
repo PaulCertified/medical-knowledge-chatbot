@@ -1,47 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider, CssBaseline, useMediaQuery } from '@mui/material';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
-import getTheme from './theme';
-import env from './config/env';
-
-// Components
-import ErrorBoundary from './components/ErrorBoundary';
-import LoadingSpinner from './components/LoadingSpinner';
+import { ThemeProvider, CssBaseline } from '@mui/material';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import theme from './theme';
+import { AuthProvider } from './contexts/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import MainLayout from './components/layout/MainLayout';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import ChatPage from './pages/ChatPage';
 
-const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth();
-
-  if (isLoading) {
-    return <LoadingSpinner fullScreen message="Checking authentication..." />;
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" />;
-  }
-
-  return <>{children}</>;
-};
+const queryClient = new QueryClient();
 
 const App: React.FC = () => {
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-  const [mode, setMode] = useState<'light' | 'dark'>(
-    env.enableDarkMode && prefersDarkMode ? 'dark' : 'light'
-  );
-
-  useEffect(() => {
-    if (env.enableDarkMode) {
-      setMode(prefersDarkMode ? 'dark' : 'light');
-    }
-  }, [prefersDarkMode]);
-
-  const theme = React.useMemo(() => getTheme(mode), [mode]);
-
   return (
-    <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <AuthProvider>
@@ -50,19 +23,21 @@ const App: React.FC = () => {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignupPage />} />
               <Route
-                path="/chat"
+                path="/"
                 element={
                   <ProtectedRoute>
-                    <ChatPage />
+                    <MainLayout>
+                      <ChatPage />
+                    </MainLayout>
                   </ProtectedRoute>
                 }
               />
-              <Route path="/" element={<Navigate to="/chat" replace />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Router>
         </AuthProvider>
       </ThemeProvider>
-    </ErrorBoundary>
+    </QueryClientProvider>
   );
 };
 

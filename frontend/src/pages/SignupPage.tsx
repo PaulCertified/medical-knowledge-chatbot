@@ -1,141 +1,107 @@
 import React, { useState } from 'react';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import {
-  Box,
-  Button,
   Container,
   Paper,
-  TextField,
   Typography,
+  TextField,
+  Button,
   Link,
+  Box,
   Alert,
+  CircularProgress,
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 const SignupPage: React.FC = () => {
+  const { signUp } = useAuth();
   const navigate = useNavigate();
-  const { signup, isLoading } = useAuth();
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    const confirmPassword = formData.get('confirmPassword') as string;
 
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
     }
 
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters long');
-      return;
-    }
-
     try {
-      await signup(email, password, name);
-      navigate('/chat');
+      setError('');
+      setIsLoading(true);
+      await signUp(email, password);
+      navigate('/');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to sign up');
+      setError('Failed to create an account');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <Container maxWidth="sm">
-      <Box
-        sx={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <Paper
-          elevation={3}
-          sx={{
-            p: 4,
-            width: '100%',
-            maxWidth: 400,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 3,
-          }}
-        >
-          <Typography variant="h4" component="h1" align="center" gutterBottom>
-            Create Account
+      <Box sx={{ mt: 8, mb: 4 }}>
+        <Paper elevation={3} sx={{ p: 4 }}>
+          <Typography component="h1" variant="h5" align="center" gutterBottom>
+            Sign Up
           </Typography>
-
-          {error && <Alert severity="error">{error}</Alert>}
-
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+          <Box component="form" onSubmit={handleSubmit} noValidate>
             <TextField
-              label="Name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              fullWidth
-            />
-
-            <TextField
-              label="Email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              margin="normal"
               required
               fullWidth
+              id="email"
+              label="Email Address"
+              name="email"
+              autoComplete="email"
+              autoFocus
+              disabled={isLoading}
             />
-
             <TextField
+              margin="normal"
+              required
+              fullWidth
+              name="password"
               label="Password"
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              id="password"
+              autoComplete="new-password"
+              disabled={isLoading}
+            />
+            <TextField
+              margin="normal"
               required
               fullWidth
-              helperText="Password must be at least 8 characters long"
-            />
-
-            <TextField
+              name="confirmPassword"
               label="Confirm Password"
               type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              fullWidth
-              error={password !== confirmPassword && confirmPassword !== ''}
-              helperText={
-                password !== confirmPassword && confirmPassword !== ''
-                  ? 'Passwords do not match'
-                  : ''
-              }
+              id="confirmPassword"
+              disabled={isLoading}
             />
-
             <Button
               type="submit"
-              variant="contained"
-              color="primary"
-              size="large"
-              disabled={isLoading}
               fullWidth
+              variant="contained"
+              sx={{ mt: 3, mb: 2 }}
+              disabled={isLoading}
             >
-              {isLoading ? 'Creating Account...' : 'Sign Up'}
+              {isLoading ? <CircularProgress size={24} /> : 'Sign Up'}
             </Button>
-          </form>
-
-          <Box sx={{ textAlign: 'center' }}>
-            <Typography variant="body2" color="text.secondary">
-              Already have an account?{' '}
-              <Link
-                component="button"
-                variant="body2"
-                onClick={() => navigate('/login')}
-              >
-                Log in
+            <Box sx={{ textAlign: 'center' }}>
+              <Link component={RouterLink} to="/login" variant="body2">
+                Already have an account? Log in
               </Link>
-            </Typography>
+            </Box>
           </Box>
         </Paper>
       </Box>

@@ -1,26 +1,27 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface User {
-  id: string;
   email: string;
-  name?: string;
 }
 
 interface AuthContextType {
   user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  error: string | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  signup: (email: string, password: string, name?: string) => Promise<void>;
+  signUp: (email: string, password: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<void>;
+  isAuthenticated: boolean;
+  forgotPassword: (email: string) => Promise<void>;
+  resetPassword: (email: string, code: string, newPassword: string) => Promise<void>;
+  register: (email: string, password: string, name?: string) => Promise<void>;
+  signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
@@ -28,115 +29,90 @@ export const useAuth = () => {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await fetch('/api/auth/session');
-        if (response.ok) {
-          const data = await response.json();
-          if (data.user) {
-            setUser(data.user);
-          }
-        }
-      } catch (err) {
-        console.error('Failed to check authentication status:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkAuth();
-  }, []);
-
-  const login = useCallback(async (email: string, password: string) => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || 'Failed to login');
-      }
-
-      const data = await response.json();
-      setUser(data.user);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred during login');
-      throw err;
-    } finally {
-      setIsLoading(false);
+    // Check for existing session
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
     }
   }, []);
 
-  const signup = useCallback(async (email: string, password: string, name?: string) => {
-    setIsLoading(true);
-    setError(null);
-
+  const login = async (email: string, password: string) => {
     try {
-      const response = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password, name }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || 'Failed to sign up');
-      }
-
-      const data = await response.json();
-      setUser(data.user);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred during signup');
-      throw err;
-    } finally {
-      setIsLoading(false);
+      // Simulate API call
+      const user = { email };
+      localStorage.setItem('user', JSON.stringify(user));
+      setUser(user);
+    } catch (error) {
+      throw new Error('Login failed');
     }
-  }, []);
+  };
 
-  const logout = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
+  const signIn = login; // Alias for login
 
+  const signUp = async (email: string, password: string) => {
     try {
-      const response = await fetch('/api/auth/logout', {
-        method: 'POST',
-      });
+      // Simulate API call
+      const user = { email };
+      localStorage.setItem('user', JSON.stringify(user));
+      setUser(user);
+    } catch (error) {
+      throw new Error('Sign up failed');
+    }
+  };
 
-      if (!response.ok) {
-        throw new Error('Failed to logout');
-      }
-
+  const logout = async () => {
+    try {
+      localStorage.removeItem('user');
       setUser(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred during logout');
-      throw err;
-    } finally {
-      setIsLoading(false);
+    } catch (error) {
+      throw new Error('Logout failed');
     }
-  }, []);
+  };
+
+  const signOut = logout;
+
+  const forgotPassword = async (email: string) => {
+    try {
+      // Simulate API call for password reset
+      console.log(`Password reset email sent to ${email}`);
+    } catch (error) {
+      throw new Error('Password reset request failed');
+    }
+  };
+
+  const resetPassword = async (email: string, code: string, newPassword: string) => {
+    try {
+      // Simulate API call for password reset confirmation
+      console.log(`Password reset confirmed for ${email}`);
+    } catch (error) {
+      throw new Error('Password reset confirmation failed');
+    }
+  };
+
+  const register = async (email: string, password: string, name?: string) => {
+    try {
+      // Simulate API call for registration
+      const user = { email };
+      localStorage.setItem('user', JSON.stringify(user));
+      setUser(user);
+    } catch (error) {
+      throw new Error('Registration failed');
+    }
+  };
 
   const value = {
     user,
-    isAuthenticated: !!user,
-    isLoading,
-    error,
     login,
     logout,
-    signup,
+    signUp,
+    signIn,
+    isAuthenticated: !!user,
+    forgotPassword,
+    resetPassword,
+    register,
+    signOut,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

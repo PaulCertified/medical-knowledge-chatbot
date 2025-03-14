@@ -12,8 +12,10 @@ export interface ChatState {
 }
 
 export interface SendMessageRequest {
-  message: string;
+  content: string;
   conversationId?: string;
+  userId: string;
+  timestamp: string;
 }
 
 export interface SendMessageResponse {

@@ -4,11 +4,11 @@ import { AnimatePresence, motion } from 'framer-motion';
 import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
 
-export interface Message {
+interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
-  timestamp: Date;
+  timestamp: string;
 }
 
 interface ChatProps {
@@ -93,7 +93,7 @@ const Chat: React.FC<ChatProps> = ({
               <ChatMessage
                 role={message.role}
                 content={message.content}
-                timestamp={message.timestamp}
+                timestamp={new Date(message.timestamp).toISOString()}
               />
             </motion.div>
           ))}
@@ -106,6 +106,7 @@ const Chat: React.FC<ChatProps> = ({
               <ChatMessage
                 role="assistant"
                 content="Thinking..."
+                timestamp={new Date().toISOString()}
               />
             </motion.div>
           )}

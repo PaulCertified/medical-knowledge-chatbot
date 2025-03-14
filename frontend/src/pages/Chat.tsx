@@ -17,6 +17,7 @@ import axios from 'axios';
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+  timestamp: string;
 }
 
 interface RelevantDoc {
@@ -48,7 +49,11 @@ const Chat: React.FC = () => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
-    const userMessage = { role: 'user' as const, content: input.trim() };
+    const userMessage = {
+      role: 'user' as const,
+      content: input.trim(),
+      timestamp: new Date().toISOString(),
+    };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
@@ -58,7 +63,15 @@ const Chat: React.FC = () => {
         messages: [...messages, userMessage],
       });
 
-      setMessages(prev => [...prev, response.data.message]);
+      setMessages(prev => [
+        ...prev,
+        {
+          ...response.data.message,
+          timestamp: typeof response.data.message.timestamp === 'string' 
+            ? response.data.message.timestamp 
+            : new Date(response.data.message.timestamp).toISOString(),
+        },
+      ]);
       setRelevantDocs(response.data.relevantDocs || []);
     } catch (error) {
       console.error('Failed to send message:', error);
@@ -67,6 +80,7 @@ const Chat: React.FC = () => {
         {
           role: 'assistant',
           content: 'Sorry, I encountered an error. Please try again.',
+          timestamp: new Date().toISOString(),
         },
       ]);
     } finally {
@@ -86,15 +100,17 @@ const Chat: React.FC = () => {
         }}
       >
         <Paper
+          elevation={1}
           sx={{
             p: 2,
-            maxWidth: '70%',
-            backgroundColor: isUser ? 'primary.main' : 'grey.100',
-            color: isUser ? 'white' : 'text.primary',
+            bgcolor: isUser ? 'primary.light' : 'background.paper',
             borderRadius: 2,
           }}
         >
           <Typography variant="body1">{message.content}</Typography>
+          <Typography variant="caption" color={isUser ? 'inherit' : 'text.secondary'}>
+            {new Date(message.timestamp).toLocaleTimeString()}
+          </Typography>
         </Paper>
       </Box>
     );

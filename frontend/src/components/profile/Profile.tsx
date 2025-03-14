@@ -4,7 +4,8 @@ import { useAuth } from '../../hooks/useAuth';
 
 const Profile: React.FC = () => {
   const { user } = useAuth();
-  const userAttributes = user?.getSignInUserSession()?.getIdToken().payload || {};
+  // Access user properties directly
+  const userEmail = user?.email || '';
 
   return (
     <Box>
@@ -17,13 +18,7 @@ const Profile: React.FC = () => {
         </Typography>
         <Box sx={{ mt: 2 }}>
           <Typography>
-            <strong>Email:</strong> {userAttributes.email}
-          </Typography>
-          <Typography>
-            <strong>First Name:</strong> {userAttributes.given_name}
-          </Typography>
-          <Typography>
-            <strong>Last Name:</strong> {userAttributes.family_name}
+            <strong>Email:</strong> {userEmail}
           </Typography>
         </Box>
       </Paper>

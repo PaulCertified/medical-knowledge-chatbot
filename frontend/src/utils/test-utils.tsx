@@ -6,10 +6,18 @@ import { MemoryRouter } from 'react-router-dom';
 import { AuthProvider } from '../contexts/AuthContext';
 import theme from '../theme';
 
+interface RenderOptions {
+  route?: string;
+  initialEntries?: string[];
+  queryClient?: QueryClient;
+}
+
+const route: string = '/';
+
 function render(
   ui: React.ReactElement,
   {
-    route = '/',
+    route = '/' as string,
     initialEntries = [route],
     queryClient = new QueryClient({
       defaultOptions: {
@@ -19,16 +27,14 @@ function render(
       },
     }),
     ...renderOptions
-  } = {}
+  }: RenderOptions = {}
 ) {
   function Wrapper({ children }: { children: React.ReactNode }) {
     return (
       <QueryClientProvider client={queryClient}>
         <ThemeProvider theme={theme}>
           <MemoryRouter initialEntries={initialEntries}>
-            <AuthProvider>
-              {children}
-            </AuthProvider>
+            <AuthProvider>{children}</AuthProvider>
           </MemoryRouter>
         </ThemeProvider>
       </QueryClientProvider>

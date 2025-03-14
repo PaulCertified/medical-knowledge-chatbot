@@ -11,15 +11,20 @@ import { Send as SendIcon } from '@mui/icons-material';
 
 interface MessageInputProps {
   onSendMessage: (message: string) => void;
-  isLoading: boolean;
+  isLoading?: boolean;
+  disabled?: boolean;
 }
 
-const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, isLoading }) => {
+const MessageInput: React.FC<MessageInputProps> = ({ 
+  onSendMessage, 
+  isLoading = false, 
+  disabled = false 
+}) => {
   const [message, setMessage] = useState('');
   const theme = useTheme();
 
   const handleSubmit = () => {
-    if (message.trim() && !isLoading) {
+    if (message.trim() && !disabled && !isLoading) {
       onSendMessage(message.trim());
       setMessage('');
     }
@@ -55,7 +60,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, isLoading })
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         onKeyPress={handleKeyPress}
-        disabled={isLoading}
+        disabled={disabled}
       />
       <Box sx={{ ml: 1, mr: 1 }}>
         {isLoading ? (
@@ -64,7 +69,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, isLoading })
           <IconButton
             color="primary"
             onClick={handleSubmit}
-            disabled={!message.trim()}
+            disabled={!message.trim() || disabled}
             sx={{
               backgroundColor: message.trim() ? theme.palette.primary.main : 'transparent',
               color: message.trim() ? theme.palette.primary.contrastText : theme.palette.text.disabled,
